@@ -1,0 +1,96 @@
+% 带权的kmeans
+function [idxbest, Cbest, sumDbest, Dbest] = KM1(X, k, H )
+k
+% initialize
+    [n,p]=size(X);
+    idxbest=NaN(n,1);
+    Cbest=NaN(k,p);
+    sumDbest=zeros(k,1);
+    Dbest=zeros(n,k);
+    
+    for i=1:k
+        idx=round(rand(1,1)*n);
+        Cbest(i,:)=X(idx,:);
+        j=1;
+        while(1)
+            if(j==i)
+                break;
+            end
+            if(Cbest(j,:)==Cbest(i,:))
+                Cbest(i,:)=X(round(rand(1,1)*n),:);
+                j=1;
+            else
+                j=j+1;
+            end
+        end
+    end
+    item=0;
+    while true
+        if(item==100)
+            break;
+        end
+        item=item+1;
+        for i=1:k
+            % c表示权重
+            c=H(Cbest(i,1),Cbest(i,2));
+            Dbest(:,i) = (X(:,1) - Cbest(i,1)).^2/c;
+            
+%             2017.1.2修改a
+%             理由：去掉循环，提高运行速度
+%             for j = 2:p
+%                 Dbest(:,i) = Dbest(:,i) + (X(:,j) - Cbest(i,j)).^2/c;
+%             end
+            Dbest(:,i) = Dbest(:,i) + (X(:,2) - Cbest(i,2)).^2/c;
+            
+        end
+        
+%         2017.1.2修改b
+%         理由：sumDtemp创建同样耗时，且sumDbest无用；
+%               优化代码，提高运行速度
+%         sumDtemp=zeros(k,1);
+%         for i=1:n
+%             temp=find(Dbest(i,:)==min(Dbest(i,:)));
+%             idxbest(i)=temp(1);
+%             sumDtemp(temp(1))=sumDtemp(temp(1))+Dbest(i,temp(1));
+%         end
+        [temp,idxbest]=min(Dbest,[],2);
+        for i=1:k
+            sumDbest(i)=sum(temp(idxbest==i));
+        end
+        
+        counts = zeros(k,1);
+        centroids = NaN(k,p);
+        for i=1:k
+%             2017.1.2修改c
+%             理由：member无用
+%             members=(idxbest==i);
+%             XY=X(members,:);
+            XY=X(idxbest==i,:);
+            L=size(XY,1);
+            for j=1:L
+                c=H(XY(j,1),XY(j,2));
+%                 2017.1.2修改d
+%                 理由：x,y无用
+%                 x=XY(j,1)*c;
+%                 y=XY(j,2)*c;
+%                 XY(j,:)=[x y];
+                XY(j,:)=XY(j,:)*c;
+
+                counts(i)=counts(i)+c;
+            end
+            
+            centroids(i,:) = round(sum(XY,1) / counts(i));
+%             2017.1.2修改e
+%             理由：round函数；一步到位，不用for循环
+%             for j=1:p
+%                 centroids(i,j)=floor(centroids(i,j)+0.5);
+%             end
+        end
+        if(centroids==Cbest)
+            break;
+        end
+        Cbest=centroids;
+    end
+%     2017.1.2修改b
+%     sumDbest=sumDtemp;
+end
