@@ -9,6 +9,9 @@ function [idxbest, Cbest, sumDbest, Dbest] = KM1(X, k, H )
     
     for i=1:k
         idx=round(rand(1,1)*n);
+        while(~idx)
+            idx=round(rand(1,1)*n);
+        end
         Cbest(i,:)=X(idx,:);
         j=1;
         while(1)
