@@ -1,6 +1,5 @@
 % 带权的kmeans
 function [idxbest, Cbest, sumDbest, Dbest] = KM1(X, k, H )
-k
 % initialize
     [n,p]=size(X);
     idxbest=NaN(n,1);
